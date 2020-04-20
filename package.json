@@ -16,8 +16,11 @@
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "express-session": "^1.17.1",
     "express-ws": "^4.0.0",
     "jquery": "^3.4.1",
+    "jwt-decode": "^2.2.0",
+    "keycloak-connect": "^9.0.3",
     "mongodb": "^3.5.3",
     "mongoose": "^5.9.2",
     "socket.io": "^2.3.0"
