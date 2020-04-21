@@ -70,8 +70,8 @@ app.post('/addClip', keycloak.protect(), (req, res) => {
     let token = req.headers.authorization.split("Bearer")[1].trim();
     let decodedToken = jwtDecode(token);
     let userId = decodedToken["preferred_username"];
-    userId = "adam@gmail.com"
-    console.log(userId);
+    // userId = "adam@gmail.com"
+    // console.log(userId);
     console.log('Got body:', req.body);
     let dbo = mongodb.db(dbName);
     myobj = req.body;
@@ -89,21 +89,21 @@ app.post('/addClip', keycloak.protect(), (req, res) => {
 });
 
 app.get('/clips/:userId', keycloak.protect(), function(req, res) {
-    let token = req.headers.authorization.split("Bearer")[1].trim();
-    let decodedToken = jwtDecode(token);
-    let userId = decodedToken["preferred_username"];
+
+    // let token = req.headers.authorization.split("Bearer")[1].trim();
+    // let decodedToken = jwtDecode(token);
+
+    // let userId = decodedToken["preferred_username"];
     userId = req.params["userId"];
     console.log("clips api: ", userId);
-    main_result = {};
+    // main_result = {};
     let dbo = mongodb.db(dbName);
     let query = {userId: userId};
     dbo.collection("clips").find(query).toArray(function(err, result) {
       if (err) throw err;
-      main_result = result;
-    //   console.log(result);
+    //   main_result = result;
       res.send(result);
     });
-    //res.send(main_result);
 });
 
 // app.route('/deleteClip').delete(function(req, res) {
@@ -129,67 +129,72 @@ io.on('connection', function(socket) {
     console.log('Desktop Client connected...');
     // socket.emit('message','you are connected');
     socket.on("join", function(reqObj) {
-        // let {token} = reqObj;
-        const options = {
-            hostname: 'whatever.com',
-            port: 443,
-            path: '/todos',
-            method: 'GET'
-        }
-
-
-        // const req = https.request(options, res => {
-        //     console.log(`statusCode: ${res.statusCode}`)
-        
-        //     res.on('data', d => {
-        //     process.stdout.write(d)
-        //     })
-        // })
-  
-
-        let userId = reqObj["userId"];
-        console.log("User joined: ",userId)
-        socket.join("room-"+userId);
-        // socket.emit('message','you are added to the room '+userId);
-        console.log(io.sockets.adapter.rooms["room-"+userId]);
+        if("token" in reqObj) {
+            let {token} = reqObj;
+            // token = "a";
+            const options = {
+                method: 'GET',
+                url: 'http://localhost:8080/auth/realms/copa/protocol/openid-connect/userinfo',
+                headers: {
+                    Authorization: "Bearer "+token
+                },
+               json: true
+            }
+            const request = require('request');
+            request(options, (err, res, body) => {
+                if (err) { return console.log(err); }
+                if("error" in body) {
+                    console.log("Invalid token");
+                    socket.emit({success: false})
+                } else {
+                    let decodedToken = jwtDecode(token);
+                    let userId = decodedToken["preferred_username"];
+                    console.log("User joined: ",userId)
+                    socket.join("room-"+userId);   
+                    socket.emit({success: true})                                     
+                }
+            });
+        }   
     });
     socket.on("leave", function(reqObj) {
-        let userId = reqObj["userId"];
+        let {token} = reqObj;
+        let decodedToken = jwtDecode(token);
+        let userId = decodedToken["preferred_username"];
         console.log("User left: ",userId)
         socket.leave("room-"+userId);
-        socket.emit('message','you are removed from the room '+userId);
-    });
-    socket.on('desktopClient',function(reqObj){
-        let userId = reqObj["userId"];
-        console.log("user id:", userId);
-        let clipData = reqObj["clipboardText"]
-        let dbo = mongodb.db(dbName);
-        myobj = reqObj;
-        dbo.collection("clips").insertOne(myobj, function(err, res) {
-            if (err) throw err;
-            // console.log(res);
-            console.log("1 document inserted");      
-            // console.log("socket info: ", io.sockets.manager.roomClients[socket.id]);
-            io.sockets.in("room-"+userId).emit("newData", myobj);      
+        socket.emit({
+            message:'you are removed from the room '
         });
-        //   socket.to('mobileClient').emit(clipData,'From Desktop');
     });
-    socket.on("newData", function(data) {
-        console.log("Inside new data callback:", data);
-    })
-    socket.on('mobileClient',function(reqObj){
-        let userId = reqObj["userId"];
-        let clipData = reqObj["clipboardText"]
-        let dbo = mongodb.db(dbName);
-        myobj = reqObj;
-        dbo.collection("clips").insertOne(myobj, function(err, res) {
-            if (err) throw err;
-            console.log("1 document inserted");
-            io.sockets.in("room-"+userId).emit("newData", myobj);           
-        });
-        // socket.emit('message','From Desktop');
-        // socket.to(userId).emit("newData", clipData);
-    });
+    // socket.on('desktopClient',function(reqObj){
+    //     let userId = reqObj["userId"];
+    //     console.log("user id:", userId);
+    //     let clipData = reqObj["clipboardText"]
+    //     let dbo = mongodb.db(dbName);
+    //     myobj = reqObj;
+    //     dbo.collection("clips").insertOne(myobj, function(err, res) {
+    //         if (err) throw err;
+    //         // console.log(res);
+    //         console.log("1 document inserted");      
+    //         // console.log("socket info: ", io.sockets.manager.roomClients[socket.id]);
+    //         io.sockets.in("room-"+userId).emit("newData", myobj);      
+    //     });
+    //     //   socket.to('mobileClient').emit(clipData,'From Desktop');
+    // });
+    
+    // socket.on('mobileClient',function(reqObj){
+    //     let userId = reqObj["userId"];
+    //     let clipData = reqObj["clipboardText"]
+    //     let dbo = mongodb.db(dbName);
+    //     myobj = reqObj;
+    //     dbo.collection("clips").insertOne(myobj, function(err, res) {
+    //         if (err) throw err;
+    //         console.log("1 document inserted");
+    //         io.sockets.in("room-"+userId).emit("newData", myobj);           
+    //     });
+    //     // socket.emit('message','From Desktop');
+    //     // socket.to(userId).emit("newData", clipData);
+    // });
         
 });
 

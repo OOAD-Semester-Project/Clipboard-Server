@@ -5,31 +5,18 @@
     </head>
     <body>
         <h1>Welcome to the COPA app</h1>
-        <!-- <div id="future"></div>
-        <form id="form" id="chat_form">
-            <input id="chat_input" type="text">
-            <input type="submit" value="Send">
-        </form>
-         <script src="/jquery/dist/jquery.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script>
-            var socket = io.connect('http://localhost:3000');
-     socket.on('connect', function(data) {
-        socket.emit('join', 'Hello World from client');
-     });
-            var socket = io.connect();
-            socket.on('connect', function(data) {
-               socket.emit('join', 'Hello World from client');
-            });
-            socket.on('broad', function(data) {
-                    $('#future').append(data+ "<br/>");
-              });
-           
-            $('form').submit(function(e){
-                e.preventDefault();
-                var message = $('#chat_input').val();
-                socket.emit('messages', message);
-            });
-           </script> -->
+        const socket = io('http://localhost:3000');
+        socket.on('news', (data) => {
+            console.log(data);
+            socket.emit('my other event', { my: 'data' });
+        });
+        socket.emit('join', { my: 'data' });
+        socket.on('newData', (data) => {
+            console.log("newData event", data);
+            // socket.emit('my other event', { my: 'data' });
+        });
+        </script>
     </body>
 </html>
