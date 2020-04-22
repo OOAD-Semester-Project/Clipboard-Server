@@ -42,6 +42,7 @@ MongoClient.connect(dbUrl, {
     }
 );
 
+app.use( keycloak.middleware( { logout: '/logout'} ));
 
 app.use(express.static(__dirname + '/node_modules'));
 app.get('/',function(req, res,next) {
@@ -54,7 +55,7 @@ app.get('/test', keycloak.protect(), function(req, res,next) {
 
 app.get('/logoff', keycloak.protect(), (req, res) => {
     console.log('logout clicked');
-    res.send('https://' + HOST + '/logout');
+    res.send('http://' + HOST + ':3000/logout');
 });
 
 app.post('/addClip', keycloak.protect(), (req, res) => {
