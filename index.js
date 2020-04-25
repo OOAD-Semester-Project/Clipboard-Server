@@ -42,6 +42,10 @@ MongoClient.connect(dbUrl, {
     }
 );
 
+app.get('/testdeployment', (req, res) => {
+    res.status(200).send('Server is running.').end();
+});
+
 app.use( keycloak.middleware( { logout: '/logout'} ));
 
 app.use(express.static(__dirname + '/node_modules'));
