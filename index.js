@@ -20,9 +20,10 @@ const https = require('https')
 
 let memoryStore = new session.MemoryStore();
 let keycloak = new Keycloak({ store: memoryStore });
-const HOST = 'localhost';
+const HOST = 'copa-keycloak.herokuapp.com';
+// const HOST = 'localhost';
 const PORT = process.env.PORT || 3000;
-const USERINFO_ENDPOINT = "http://localhost:8080/auth/realms/copa/protocol/openid-connect/userinfo"
+const USERINFO_ENDPOINT = "https://copa-keycloak.herokuapp.com/auth/realms/copa/protocol/openid-connect/userinfo"
 const jwtDecode = require('jwt-decode');
 
 //session
@@ -42,7 +43,7 @@ MongoClient.connect(dbUrl, {
     }
 );
 
-app.use( keycloak.middleware( { logout: '/logout'} ));
+// app.use( keycloak.middleware( { logout: '/logout'} ));
 
 app.use(express.static(__dirname + '/node_modules'));
 app.get('/',function(req, res,next) {
@@ -53,9 +54,16 @@ app.get('/test', keycloak.protect(), function(req, res,next) {
     res.send({"message": "This is a test API"});
 });
 
-app.get('/logoff', keycloak.protect(), (req, res) => {
-    console.log('logout clicked');
-    res.send('http://' + HOST + ':3000/logout');
+// app.get('/logoff', keycloak.protect(), (req, res) => {
+//     console.log('logout clicked');
+//     res.send('http://' + HOST + ':3000/logout');
+// });
+
+app.get("/signout", (req, res, next) => {
+	console.log('Attempting to logout');
+	req.logout();
+	req.session.destroy();
+	res.redirect('/');
 });
 
 app.post('/addClip', keycloak.protect(), (req, res) => {
@@ -127,7 +135,7 @@ app.get('/clips/:userId', keycloak.protect(), function(req, res) {
 // let socketController = new SocketController();
 
 io.on('connection', function(socket) {  
-    console.log('Desktop Client connected...');
+    // console.log('Desktop Client connected...');
     // socket.emit('message','you are connected');
     socket.on("join", function(reqObj) {
         if("token" in reqObj) {
@@ -135,7 +143,7 @@ io.on('connection', function(socket) {
             // token = "a";
             const options = {
                 method: 'GET',
-                url: 'http://localhost:8080/auth/realms/copa/protocol/openid-connect/userinfo',
+                url: 'https://copa-keycloak.herokuapp.com/auth/realms/copa/protocol/openid-connect/userinfo',
                 headers: {
                     Authorization: "Bearer "+token
                 },

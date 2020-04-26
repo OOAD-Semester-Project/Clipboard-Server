@@ -9,7 +9,7 @@
   "keywords": [
     "mongodb"
   ],
-  "author": "Vishwanath Kulkarni",
+  "author": "Madhusudhan Aithal",
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.7.2",
