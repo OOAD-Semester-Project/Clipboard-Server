@@ -20,8 +20,6 @@ const https = require('https')
 
 let memoryStore = new session.MemoryStore();
 let keycloak = new Keycloak({ store: memoryStore });
-const HOST = 'copa-keycloak.herokuapp.com';
-// const HOST = 'localhost';
 const PORT = process.env.PORT || 3000;
 const USERINFO_ENDPOINT = "https://copa-keycloak.herokuapp.com/auth/realms/copa/protocol/openid-connect/userinfo"
 const jwtDecode = require('jwt-decode');
@@ -43,14 +41,14 @@ MongoClient.connect(dbUrl, {
     }
 );
 
-// app.use( keycloak.middleware( { logout: '/logout'} ));
+app.use( keycloak.middleware( { logout: '/logout'} ));
 
 app.use(express.static(__dirname + '/node_modules'));
 app.get('/',function(req, res,next) {
     res.sendFile(__dirname + '/index.html');
 });
 
-app.get('/test', keycloak.protect(), function(req, res,next) {
+app.get('/test', keycloak.protect(), function(req, res,next) {    
     res.send({"message": "This is a test API"});
 });
 
@@ -59,12 +57,12 @@ app.get('/test', keycloak.protect(), function(req, res,next) {
 //     res.send('http://' + HOST + ':3000/logout');
 // });
 
-app.get("/signout", (req, res, next) => {
-	console.log('Attempting to logout');
-	req.logout();
-	req.session.destroy();
-	res.redirect('/');
-});
+// app.get("/signout", (req, res, next) => {
+// 	console.log('Attempting to logout');
+// 	req.logout();
+// 	req.session.destroy();
+// 	res.redirect('/');
+// });
 
 app.post('/addClip', keycloak.protect(), (req, res) => {
     /*  
@@ -208,5 +206,5 @@ io.on('connection', function(socket) {
 });
 
 // server.listen(3000);
-server.listen(PORT, HOST)
-console.log('HTTP Server listening on %s:%s', HOST, PORT);
+server.listen(PORT)
+console.log('HTTP Server listening on: %s', PORT);
