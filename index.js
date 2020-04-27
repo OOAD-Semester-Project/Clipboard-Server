@@ -72,6 +72,7 @@ app.post('/addClip', keycloak.protect(), (req, res) => {
     let dbo = mongodb.db(dbName);
     myobj = req.body;
     myobj["userId"] = userId
+    myobj["timestamp"] = Number(myobj["timestamp"])
     dbo.collection("clips").insertOne(myobj, function(err, dbResult) {
         if (err) throw err;
         console.log("1 document inserted");
@@ -99,14 +100,12 @@ app.route('/deleteClip').delete(function(req, res) {
     console.log('Got body DELETE:', req.body);
     let result = {};
     let dbo = mongodb.db(dbName);
-    id = req.body["_id"];
+    id = req.body["_id"]+"";
     console.log("Id to be deleted: "+id)
     let myquery = { _id: new ObjectId(id) };
     dbo.collection("clips").deleteOne(myquery, function(err, dbResult) {
-        console.log();
         if (err) throw err;
-        let result = {};
-        
+        let result = {};        
         if(dbResult.result.n > 0) {
             result["success"] = true
             result["message"] = "Successfully deleted the clipboard text"        
@@ -114,7 +113,6 @@ app.route('/deleteClip').delete(function(req, res) {
             result["success"] = false
             result["message"] = "Document not found"        
         }
-        // res.status(200);
         res.send(result);
     });    
 });
@@ -171,12 +169,5 @@ io.on('connection', function(socket) {
     });    
 });
 
-<<<<<<< HEAD
 server.listen(PORT)
 console.log('HTTP Server listening on: %s', PORT);
-=======
-// server.listen(3000);
-server.listen(PORT);
-console.log('HTTP Server listening on %s',PORT);
-
->>>>>>> 971f7189df45f988b8401cd904b2a746d6a1ff9c
