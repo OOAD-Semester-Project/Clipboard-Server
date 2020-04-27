@@ -20,9 +20,9 @@ const https = require('https')
 
 let memoryStore = new session.MemoryStore();
 let keycloak = new Keycloak({ store: memoryStore });
-const HOST = 'copa-keycloak.herokuapp.com';
+const HOST = 'clipboard-syncronization-app.appspot.com';
 // const HOST = 'localhost';
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3010;
 const USERINFO_ENDPOINT = "https://copa-keycloak.herokuapp.com/auth/realms/copa/protocol/openid-connect/userinfo"
 const jwtDecode = require('jwt-decode');
 
@@ -208,5 +208,5 @@ io.on('connection', function(socket) {
 });
 
 // server.listen(3000);
-server.listen(PORT, HOST)
-console.log('HTTP Server listening on %s:%s', HOST, PORT);
+server.listen(PORT);
+console.log('HTTP Server listening on %s',PORT);
