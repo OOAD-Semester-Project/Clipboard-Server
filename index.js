@@ -43,14 +43,14 @@ MongoClient.connect(dbUrl, {
     }
 );
 
-// app.use( keycloak.middleware( { logout: '/logout'} ));
+app.use( keycloak.middleware( { logout: '/logout'} ));
 
 app.use(express.static(__dirname + '/node_modules'));
 app.get('/',function(req, res,next) {
     res.sendFile(__dirname + '/index.html');
 });
 
-app.get('/test', keycloak.protect(), function(req, res,next) {
+app.get('/test', keycloak.protect(), function(req, res,next) {    
     res.send({"message": "This is a test API"});
 });
 
@@ -59,12 +59,12 @@ app.get('/test', keycloak.protect(), function(req, res,next) {
 //     res.send('http://' + HOST + ':3000/logout');
 // });
 
-app.get("/signout", (req, res, next) => {
-	console.log('Attempting to logout');
-	req.logout();
-	req.session.destroy();
-	res.redirect('/');
-});
+// app.get("/signout", (req, res, next) => {
+// 	console.log('Attempting to logout');
+// 	req.logout();
+// 	req.session.destroy();
+// 	res.redirect('/');
+// });
 
 app.post('/addClip', keycloak.protect(), (req, res) => {
     /*  
@@ -111,7 +111,7 @@ app.get('/clips/:userId', keycloak.protect(), function(req, res) {
     dbo.collection("clips").find(query).toArray(function(err, result) {
       if (err) throw err;
     //   main_result = result;
-      res.send(result);
+        res.send(JSON.stringify(result));
     });
 });
 
@@ -210,3 +210,4 @@ io.on('connection', function(socket) {
 // server.listen(3000);
 server.listen(PORT);
 console.log('HTTP Server listening on %s',PORT);
+

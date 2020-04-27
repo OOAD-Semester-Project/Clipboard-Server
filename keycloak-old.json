@@ -1,0 +1,9 @@
+{
+  "realm": "copa",
+  "auth-server-url": "https://copa-keycloak.herokuapp.com/auth/",
+  "ssl-required": "external",
+  "resource": "clipboard-server",
+  "public-client": true,
+  "confidential-port": 0,
+  "enable-cors": true
+}
