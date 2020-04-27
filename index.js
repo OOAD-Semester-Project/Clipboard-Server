@@ -109,7 +109,7 @@ app.get('/clips/:userId', keycloak.protect(), function(req, res) {
     dbo.collection("clips").find(query).toArray(function(err, result) {
       if (err) throw err;
     //   main_result = result;
-      res.send(result);
+        res.send(JSON.stringify(result));
     });
 });
 
