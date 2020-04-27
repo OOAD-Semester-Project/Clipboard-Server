@@ -20,7 +20,9 @@ const https = require('https')
 
 let memoryStore = new session.MemoryStore();
 let keycloak = new Keycloak({ store: memoryStore });
-const PORT = process.env.PORT || 3000;
+const HOST = 'clipboard-syncronization-app.appspot.com';
+// const HOST = 'localhost';
+const PORT = process.env.PORT || 3010;
 const USERINFO_ENDPOINT = "https://copa-keycloak.herokuapp.com/auth/realms/copa/protocol/openid-connect/userinfo"
 const jwtDecode = require('jwt-decode');
 const ObjectId = require('mongodb').ObjectID;
@@ -87,9 +89,9 @@ app.get('/clips/:userId', keycloak.protect(), function(req, res) {
     
     let dbo = mongodb.db(dbName);
     let query = {userId: userId};
-    dbo.collection("clips").find(query).toArray(function(err, dbResult) {
-      if (err) throw err;         
-      res.send(dbResult);
+    dbo.collection("clips").find(query).toArray(function(err, result) {
+      if (err) throw err;    
+        res.send(JSON.stringify(result));
     });
 });
 
@@ -169,5 +171,12 @@ io.on('connection', function(socket) {
     });    
 });
 
+<<<<<<< HEAD
 server.listen(PORT)
 console.log('HTTP Server listening on: %s', PORT);
+=======
+// server.listen(3000);
+server.listen(PORT);
+console.log('HTTP Server listening on %s',PORT);
+
+>>>>>>> 971f7189df45f988b8401cd904b2a746d6a1ff9c
