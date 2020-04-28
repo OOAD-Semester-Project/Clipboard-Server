@@ -15,12 +15,12 @@ const dbName = "copa-db";
 let mongodb;
 const Keycloak = require('keycloak-connect');
 const session = require('express-session');
-const https = require('https')
+// const https = require('https')
 
 
 let memoryStore = new session.MemoryStore();
 let keycloak = new Keycloak({ store: memoryStore });
-const HOST = 'clipboard-syncronization-app.appspot.com';
+// const HOST = 'clipboard-syncronization-app.appspot.com';
 // const HOST = 'localhost';
 const PORT = process.env.PORT || 3010;
 const USERINFO_ENDPOINT = "https://copa-keycloak.herokuapp.com/auth/realms/copa/protocol/openid-connect/userinfo"
@@ -73,15 +73,19 @@ app.post('/addClip', keycloak.protect(), (req, res) => {
     myobj = req.body;
     myobj["userId"] = userId
     myobj["timestamp"] = Number(myobj["timestamp"])
-    dbo.collection("clips").insertOne(myobj, function(err, dbResult) {
-        if (err) throw err;
-        console.log("1 document inserted");
-        io.sockets.in("room-"+userId).emit("newData", myobj);      
-        let result = {}
-        result["success"] = true
-        result["message"] = "Successfully added the clipboard text"
-        res.send(result);
-    });    
+    dbo.collection("clips").updateOne(
+        {"clipboardText": myobj["clipboardText"]}, 
+        {"$set": myobj}, 
+        {upsert: true}, 
+        function(err, dbResult) {
+            if (err) throw err;
+            console.log("1 document inserted");
+            io.sockets.in("room-"+userId).emit("newData", myobj);      
+            let result = {}
+            result["success"] = true
+            result["message"] = "Successfully added the clipboard text"
+            res.send(result);
+        });    
 });
 
 app.get('/clips/:userId', keycloak.protect(), function(req, res) {
@@ -98,7 +102,6 @@ app.get('/clips/:userId', keycloak.protect(), function(req, res) {
 
 app.route('/deleteClip').delete(function(req, res) {
     console.log('Got body DELETE:', req.body);
-    let result = {};
     let dbo = mongodb.db(dbName);
     id = req.body["_id"]+"";
     console.log("Id to be deleted: "+id)
@@ -128,7 +131,7 @@ io.on('connection', function(socket) {
             // token = "a";
             const options = {
                 method: 'GET',
-                url: 'https://copa-keycloak.herokuapp.com/auth/realms/copa/protocol/openid-connect/userinfo',
+                url: USERINFO_ENDPOINT,
                 headers: {
                     Authorization: "Bearer "+token
                 },
