@@ -55,6 +55,13 @@ app.get('/test', keycloak.protect(), function(req, res,next) {
     res.send({"message": "This is a test API"});
 });
 
+function getUserId(req) {
+    let token = req.headers.authorization.split("Bearer")[1].trim();
+    let decodedToken = jwtDecode(token);
+    let userId = decodedToken["preferred_username"];
+
+    return userId
+}
 app.post('/addClip', keycloak.protect(), (req, res) => {
     /*  
     Request body format: 
@@ -65,9 +72,8 @@ app.post('/addClip', keycloak.protect(), (req, res) => {
         clipboardText: string;
     }
     */
-    let token = req.headers.authorization.split("Bearer")[1].trim();
-    let decodedToken = jwtDecode(token);
-    let userId = decodedToken["preferred_username"];
+    userId = getUserId(req);
+    console.log("user id:", userId)
     console.log('Got body:', req.body);
     let dbo = mongodb.db(dbName);
     myobj = req.body;
@@ -93,7 +99,8 @@ app.post('/addClip', keycloak.protect(), (req, res) => {
 });
 
 app.get('/clips/:userId', keycloak.protect(), function(req, res) {
-    userId = req.params["userId"];
+    // userId = req.params["userId"];
+    userId = getUserId(req);
     console.log("clips api: ", userId);
     
     let dbo = mongodb.db(dbName);
@@ -104,18 +111,25 @@ app.get('/clips/:userId', keycloak.protect(), function(req, res) {
     });
 });
 
-app.route('/deleteClip').delete(function(req, res) {
+app.delete('/deleteClip', keycloak.protect(), function(req, res) {
     console.log('Got body DELETE:', req.body);
     let dbo = mongodb.db(dbName);
     id = req.body["_id"]+"";
+    fromType = req.body["fromType"];
+    userId = getUserId(req)
+    console.log("user id:", userId)
     console.log("Id to be deleted: "+id)
     let myquery = { _id: new ObjectId(id) };
     dbo.collection("clips").deleteOne(myquery, function(err, dbResult) {
         if (err) throw err;
-        let result = {};        
+        let result = {};     
         if(dbResult.result.n > 0) {
             result["success"] = true
-            result["message"] = "Successfully deleted the clipboard text"        
+            result["message"] = "Successfully deleted the clipboard text"  
+            io.sockets.in("room-"+userId).emit("newDataArrived", {
+                "fromType": fromType,
+                "success": true
+            });            
         } else {
             result["success"] = false
             result["message"] = "Document not found"        
