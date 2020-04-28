@@ -74,7 +74,11 @@ app.post('/addClip', keycloak.protect(), (req, res) => {
     myobj["userId"] = userId
     myobj["timestamp"] = Number(myobj["timestamp"])
     dbo.collection("clips").updateOne(
-        {"clipboardText": myobj["clipboardText"]}, 
+        {
+            "clipboardText": myobj["clipboardText"],
+            "from": myobj["from"],
+            "fromType": myobj["fromType"]
+        }, 
         {"$set": myobj}, 
         {upsert: true}, 
         function(err, dbResult) {
