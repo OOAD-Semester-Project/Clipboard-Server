@@ -34,6 +34,7 @@ app.use(session({
 
 app.use(keycloak.middleware());
 
+// MongoClient class internally makes use of Connection pooling pattern provided by the library
 MongoClient.connect(dbUrl, {  
     poolSize: 10
 },function(err, db) {
@@ -66,14 +67,14 @@ function getUserId(req) {
 
 // Function for handling the POST request made to 'addClip' endpoint
 app.post('/addClip', keycloak.protect(), (req, res) => {
-    /*  
-    Request body format: 
-    {
-        fromType: string;
-        from: string;
-        timestamp: string;
-        clipboardText: string;
-    }
+      
+    /*  Request body format: 
+        {
+            fromType: string;
+            from: string;
+            timestamp: string;
+            clipboardText: string;
+        } 
     */
     userId = getUserId(req);
     console.log("user id:", userId)
@@ -144,8 +145,15 @@ app.delete('/deleteClip', keycloak.protect(), function(req, res) {
 });
 
 // Socket service sending messages to clients whenever a user copies new text or deletes a clip
+// Sockets internally makes use of the Observer pattern
 io.on('connection', function(socket) {  
+
+    // Listener for join message that clients send after estalishing the connection to the server via socket
     socket.on("join", function(reqObj) {
+
+        // Check if the token is present in the socket request and
+        // if present, authenticate the user using keycloak user_info enpoint. 
+        // Add the client to the corresponding room only if the token is valid.
         if("token" in reqObj) {
             let {token} = reqObj;
             const options = {
@@ -171,7 +179,6 @@ io.on('connection', function(socket) {
                 }
             });
 
-
             let decodedToken = jwtDecode(token);
             let userId = decodedToken["preferred_username"];
             console.log("User joined: ",userId)
@@ -179,6 +186,7 @@ io.on('connection', function(socket) {
             socket.emit({success: true})    
         }   
     });
+    
     socket.on("leave", function(reqObj) {
         let {token} = reqObj;
         let decodedToken = jwtDecode(token);
