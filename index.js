@@ -15,17 +15,15 @@ const dbName = "copa-db";
 let mongodb;
 const Keycloak = require('keycloak-connect');
 const session = require('express-session');
-// const https = require('https')
 
 
 let memoryStore = new session.MemoryStore();
 let keycloak = new Keycloak({ store: memoryStore });
-// const HOST = 'clipboard-syncronization-app.appspot.com';
-// const HOST = 'localhost';
 const PORT = process.env.PORT || 3010;
 const USERINFO_ENDPOINT = "https://copa-keycloak.herokuapp.com/auth/realms/copa/protocol/openid-connect/userinfo"
 const jwtDecode = require('jwt-decode');
 const ObjectId = require('mongodb').ObjectID;
+const socketUtils = require('./socket-controller')
 
 //session
 app.use(session({
@@ -47,7 +45,7 @@ MongoClient.connect(dbUrl, {
 app.use( keycloak.middleware( { logout: '/logout'} ));
 
 app.use(express.static(__dirname + '/node_modules'));
-app.get('/',function(req, res,next) {
+app.get('/',function(req, res,next) {    
     res.sendFile(__dirname + '/index.html');
 });
 
@@ -99,8 +97,7 @@ app.post('/addClip', keycloak.protect(), (req, res) => {
 });
 
 app.get('/clips/:userId', keycloak.protect(), function(req, res) {
-    // userId = req.params["userId"];
-    userId = getUserId(req);
+    userId = req.params["userId"];
     console.log("clips api: ", userId);
     
     let dbo = mongodb.db(dbName);
@@ -138,15 +135,10 @@ app.delete('/deleteClip', keycloak.protect(), function(req, res) {
     });    
 });
 
-// let socketController = new SocketController();
-
 io.on('connection', function(socket) {  
-    // console.log('Desktop Client connected...');
-    // socket.emit('message','you are connected');
     socket.on("join", function(reqObj) {
         if("token" in reqObj) {
             let {token} = reqObj;
-            // token = "a";
             const options = {
                 method: 'GET',
                 url: USERINFO_ENDPOINT,
@@ -155,20 +147,20 @@ io.on('connection', function(socket) {
                 },
                json: true
             }
-            // const request = require('request');
-            // request(options, (err, res, body) => {
-            //     if (err) { return console.log(err); }
-            //     if("error" in body) {
-            //         console.log("Invalid token");
-            //         socket.emit({success: false})
-            //     } else {
-            //         let decodedToken = jwtDecode(token);
-            //         let userId = decodedToken["preferred_username"];
-            //         console.log("User joined: ",userId)
-            //         socket.join("room-"+userId);   
-            //         socket.emit({success: true})                                     
-            //     }
-            // });
+            const request = require('request');
+            request(options, (err, res, body) => {
+                if (err) { return console.log(err); }
+                if("error" in body) {
+                    console.log("Invalid token");
+                    socket.emit({success: false})
+                } else {
+                    let decodedToken = jwtDecode(token);
+                    let userId = decodedToken["preferred_username"];
+                    console.log("User joined: ",userId)
+                    socket.join("room-"+userId);   
+                    socket.emit({success: true})                                     
+                }
+            });
 
 
             let decodedToken = jwtDecode(token);
