@@ -1,6 +1,6 @@
 # Copy Once Paste Anywhere
 
-The is the GitHub repository of the backend service of our project.
+The is the GitHub repository of the backend service of our project. An instance of this server is running in this [URL](http://clipboard-syncronization-app.appspot.com/).
 
 Team Members
 ---
@@ -28,3 +28,4 @@ Go into the project directory and execute the below command to start the server.
 npm start
 ```
 The node server will start listening in the port `3010`.
+

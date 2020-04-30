@@ -23,7 +23,6 @@ const PORT = process.env.PORT || 3010;
 const USERINFO_ENDPOINT = "https://copa-keycloak.herokuapp.com/auth/realms/copa/protocol/openid-connect/userinfo"
 const jwtDecode = require('jwt-decode');
 const ObjectId = require('mongodb').ObjectID;
-const socketUtils = require('./socket-controller')
 
 //session
 app.use(session({
@@ -45,14 +44,18 @@ MongoClient.connect(dbUrl, {
 app.use( keycloak.middleware( { logout: '/logout'} ));
 
 app.use(express.static(__dirname + '/node_modules'));
+
+// Root endpoint
 app.get('/',function(req, res,next) {    
     res.sendFile(__dirname + '/index.html');
 });
 
+// Test endpoint
 app.get('/test', keycloak.protect(), function(req, res,next) {    
     res.send({"message": "This is a test API"});
 });
 
+// Ustility function to get the userId from the JWT access token
 function getUserId(req) {
     let token = req.headers.authorization.split("Bearer")[1].trim();
     let decodedToken = jwtDecode(token);
@@ -60,6 +63,8 @@ function getUserId(req) {
 
     return userId
 }
+
+// Function for handling the POST request made to 'addClip' endpoint
 app.post('/addClip', keycloak.protect(), (req, res) => {
     /*  
     Request body format: 
@@ -96,6 +101,8 @@ app.post('/addClip', keycloak.protect(), (req, res) => {
         });    
 });
 
+// Function to handle the HTTP GET requests made to the endpoint `/clips/:userId' to get all the 
+// clipboard texts of a user from the database
 app.get('/clips/:userId', keycloak.protect(), function(req, res) {
     userId = req.params["userId"];
     console.log("clips api: ", userId);
@@ -108,6 +115,7 @@ app.get('/clips/:userId', keycloak.protect(), function(req, res) {
     });
 });
 
+// Function to handle the DELETE HTTP request made by clients when the user deletes a clip
 app.delete('/deleteClip', keycloak.protect(), function(req, res) {
     console.log('Got body DELETE:', req.body);
     let dbo = mongodb.db(dbName);
@@ -135,6 +143,7 @@ app.delete('/deleteClip', keycloak.protect(), function(req, res) {
     });    
 });
 
+// Socket service sending messages to clients whenever a user copies new text or deletes a clip
 io.on('connection', function(socket) {  
     socket.on("join", function(reqObj) {
         if("token" in reqObj) {
