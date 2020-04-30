@@ -1,6 +1,6 @@
 # Copy Once Paste Anywhere
 
-## Link To Project 6 Report PDF: [OOAD Project 6 (Final Report)](https://github.com/OOAD-Semester-Project/copa-electronjs-app/blob/master/OOAD%20Project%206.pdf)
+## Link To Project 6 Report PDF: [OOAD Project 6 (Final Report)](https://github.com/OOAD-Semester-Project/clipboard-server/blob/master/OOAD%20Project%206.pdf)
 
 ## Introduction
 The is the GitHub repository of the backend service of our project. An instance of this server is running in this [URL](http://clipboard-syncronization-app.appspot.com/).
