@@ -6,7 +6,7 @@ We have built a solution for synchronizing the clipboard content (any copied tex
 
 The is the GitHub repository of the backend service of our project. An instance of this server is running in this [URL](http://clipboard-syncronization-app.appspot.com/).
 
-For a full list of features and architecture description, please refer to this [README.md](https://github.com/OOAD-Semester-Project/android-app/blob/master/README.md) document
+For a full list of features and architecture description, please refer to this [README.md](https://github.com/OOAD-Semester-Project/android-app/blob/master/README.md) document.
 
 ## Prerequisites
 
